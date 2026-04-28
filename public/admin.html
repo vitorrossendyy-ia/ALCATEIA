@@ -233,6 +233,13 @@ tr:hover td { background: var(--surface2); }
   font-size: 11px; color: var(--text-muted);
 }
 .auto-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+.btn-autorizar {
+  background: var(--green-dim); border: 1px solid var(--green-border);
+  color: var(--green); font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px; font-weight: 700; padding: 6px 12px;
+  border-radius: 7px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.btn-autorizar:hover { background: rgba(34,197,94,0.2); }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
 @media (max-width: 600px) {
@@ -258,7 +265,7 @@ tr:hover td { background: var(--surface2); }
     <div class="login-sub">Entre com a senha de administrador.</div>
     <div class="field">
       <label>Senha</label>
-      <input type="password" id="inp-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter') login()">
+      <input type="password" id="inp-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter') login()" autocomplete="current-password">
     </div>
     <button class="btn-primary" onclick="login()">Entrar no painel</button>
     <div class="login-error" id="login-error">Senha incorreta. Tente novamente.</div>
@@ -280,8 +287,11 @@ tr:hover td { background: var(--surface2); }
         <div class="auto-dot"></div>
         Atualização automática
       </div>
-      <button class="simular-btn" onclick="simularPagamento()">
-        🧪 Simular pagamento
+      <button class="simular-btn" onclick="abrirLiberar()">
+        🎁 Liberar acesso
+      </button>
+      <button class="simular-btn" onclick="simularPagamento()" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.25);color:#f59e0b;">
+        🧪 Simular
       </button>
       <button class="refresh-btn" onclick="carregarPagamentos()">
         ↻ Atualizar
@@ -325,6 +335,7 @@ tr:hover td { background: var(--surface2); }
               <th>ID Mercado Pago</th>
               <th>Horário</th>
               <th>Status</th>
+              <th>Ação</th>
             </tr>
           </thead>
           <tbody id="tabela-body">
@@ -334,6 +345,30 @@ tr:hover td { background: var(--surface2); }
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal liberar acesso -->
+<div id="modal-liberar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;width:100%;max-width:400px;">
+    <div style="font-size:18px;font-weight:800;margin-bottom:6px;">🎁 Liberar acesso</div>
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:24px;">Libera o acesso ao grupo sem pagamento.</div>
+    <div class="field" style="margin-bottom:12px;">
+      <label>Senha de autorização</label>
+      <input type="password" id="lib-senha" placeholder="••••••••" style="width:100%;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14px;outline:none;">
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+      <label>Nome (opcional)</label>
+      <input type="text" id="lib-nome" placeholder="Nome do beneficiado" style="width:100%;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14px;outline:none;">
+    </div>
+    <div class="field" style="margin-bottom:20px;">
+      <label>E-mail (opcional)</label>
+      <input type="text" id="lib-email" placeholder="email@exemplo.com" style="width:100%;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14px;outline:none;">
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="fecharLiberar()" style="flex:1;padding:13px;background:var(--surface2);border:1px solid var(--border);color:var(--text-secondary);font-family:inherit;font-size:13px;font-weight:600;border-radius:var(--radius-sm);cursor:pointer;">Cancelar</button>
+      <button onclick="liberarAcesso()" style="flex:1;padding:13px;background:var(--green);border:none;color:#000;font-family:inherit;font-size:13px;font-weight:700;border-radius:var(--radius-sm);cursor:pointer;">✅ Liberar</button>
     </div>
   </div>
 </div>
@@ -409,7 +444,7 @@ tr:hover td { background: var(--surface2); }
     if (!pagamentos || pagamentos.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5">
+          <td colspan="6">
             <div class="empty">
               <div class="empty-icon">📭</div>
               <div class="empty-text">Nenhum pagamento ainda.<br>Quando alguém gerar um Pix, aparece aqui.</div>
@@ -423,6 +458,9 @@ tr:hover td { background: var(--surface2); }
       const date = new Date(p.criado_em);
       const hora = date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
       const badge = getBadge(p.status);
+      const btnAutorizar = p.status === 'pending'
+        ? `<button class="btn-autorizar" onclick="autorizar('${p.id}')">✅ Autorizar</button>`
+        : '—';
       return `
         <tr>
           <td class="td-name">${esc(p.nome)}</td>
@@ -430,8 +468,25 @@ tr:hover td { background: var(--surface2); }
           <td class="td-id">${p.id}</td>
           <td>${hora}</td>
           <td>${badge}</td>
+          <td>${btnAutorizar}</td>
         </tr>`;
     }).join('');
+  }
+
+  async function autorizar(id) {
+    try {
+      const res = await fetch(`/admin/autorizar/${id}`, {
+        method: 'POST',
+        headers: { 'x-admin-password': senhaAtual }
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showToast('✅ Pagamento autorizado!');
+        carregarPagamentos();
+      }
+    } catch (e) {
+      showToast('Erro ao autorizar');
+    }
   }
 
   function getBadge(status) {
@@ -464,6 +519,39 @@ tr:hover td { background: var(--surface2); }
       }
     } catch (e) {
       showToast('Erro ao simular pagamento');
+    }
+  }
+
+  function abrirLiberar() {
+    document.getElementById('modal-liberar').style.display = 'flex';
+  }
+  function fecharLiberar() {
+    document.getElementById('modal-liberar').style.display = 'none';
+    document.getElementById('lib-senha').value = '';
+    document.getElementById('lib-nome').value = '';
+    document.getElementById('lib-email').value = '';
+  }
+  async function liberarAcesso() {
+    const senha = document.getElementById('lib-senha').value;
+    const nome = document.getElementById('lib-nome').value;
+    const email = document.getElementById('lib-email').value;
+    if (!senha) { showToast('Digite a senha de autorização'); return; }
+    try {
+      const res = await fetch('/autorizar-acesso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senha, nome, email })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        fecharLiberar();
+        showToast('🎁 Acesso liberado com sucesso!');
+        carregarPagamentos();
+      } else {
+        showToast('❌ Senha incorreta');
+      }
+    } catch (e) {
+      showToast('Erro ao liberar acesso');
     }
   }
 
