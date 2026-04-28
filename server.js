@@ -7,30 +7,23 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// ─── Configuração Mercado Pago ───
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN || "TEST-1411058631952367-042813-2293bc803e953dc2aff159288614561d-256824285",
 });
 const payment = new Payment(client);
 
-// ─── Senha do admin ───
 const ADMIN_PASS = process.env.ADMIN_PASSWORD || "alcateia2024";
-
-// ─── Histórico em memória ───
 const pagamentos = [];
 
-// ─── Middleware admin ───
 function adminAuth(req, res, next) {
   const senha = req.headers["x-admin-password"];
   if (senha !== ADMIN_PASS) return res.status(401).json({ error: "Não autorizado" });
   next();
 }
 
-// ─── Criar Pix ───
 app.post("/criar-pix", async (req, res) => {
   try {
     const { nome, email } = req.body;
-
     const result = await payment.create({
       body: {
         transaction_amount: 99,
@@ -42,10 +35,7 @@ app.post("/criar-pix", async (req, res) => {
         },
       },
     });
-
     const pixData = result.point_of_interaction?.transaction_data;
-
-    // Salva no histórico
     pagamentos.unshift({
       id: result.id,
       nome: nome || "—",
@@ -54,7 +44,6 @@ app.post("/criar-pix", async (req, res) => {
       valor: 99,
       criado_em: new Date().toISOString(),
     });
-
     res.json({
       id: result.id,
       status: result.status,
@@ -67,15 +56,11 @@ app.post("/criar-pix", async (req, res) => {
   }
 });
 
-// ─── Verificar pagamento ───
 app.get("/verificar/:id", async (req, res) => {
   try {
     const result = await payment.get({ id: req.params.id });
-
-    // Atualiza status no histórico
     const p = pagamentos.find(p => String(p.id) === String(req.params.id));
     if (p) p.status = result.status;
-
     res.json({ status: result.status });
   } catch (err) {
     console.error("Erro ao verificar:", err);
@@ -83,9 +68,7 @@ app.get("/verificar/:id", async (req, res) => {
   }
 });
 
-// ─── API Admin: listar pagamentos ───
 app.get("/admin/pagamentos", adminAuth, async (req, res) => {
-  // Atualiza status de todos os pendentes
   for (const p of pagamentos) {
     if (p.status === "pending") {
       try {
@@ -97,19 +80,29 @@ app.get("/admin/pagamentos", adminAuth, async (req, res) => {
   res.json({ pagamentos, total: pagamentos.length, aprovados: pagamentos.filter(p => p.status === "approved").length });
 });
 
-// ─── API Admin: verificar senha ───
 app.post("/admin/login", (req, res) => {
   const { senha } = req.body;
   if (senha === ADMIN_PASS) res.json({ ok: true });
   else res.status(401).json({ ok: false });
 });
 
-// ─── Painel admin (rota protegida) ───
+app.post("/admin/simular", adminAuth, (req, res) => {
+  const fake = {
+    id: "SIMULADO-" + Date.now(),
+    nome: req.body.nome || "Cliente Teste",
+    email: req.body.email || "teste@alcateia.com",
+    status: "approved",
+    valor: 99,
+    criado_em: new Date().toISOString(),
+  };
+  pagamentos.unshift(fake);
+  res.json({ ok: true, pagamento: fake });
+});
+
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
-// ─── Servir frontend ───
 app.use(express.static("public"));
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
