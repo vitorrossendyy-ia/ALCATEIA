@@ -351,6 +351,10 @@ body::before {
         <label>Seu e-mail</label>
         <input type="email" id="inp-email" placeholder="email@exemplo.com">
       </div>
+      <div class="field">
+        <label>Seu WhatsApp</label>
+        <input type="tel" id="inp-whatsapp" placeholder="(69) 99999-9999">
+      </div>
       <button class="cta-btn" id="btn-gerar" onclick="gerarPix()" style="margin-top:8px">
         Gerar Pix →
       </button>
@@ -407,6 +411,11 @@ body::before {
         </div>
       </div>
     </div>
+
+    <!-- Dúvidas -->
+    <a href="https://wa.me/5569999379221?text=Ol%C3%A1%2C+tenho+uma+d%C3%BAvida+sobre+a+Alcateia!" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;background:rgba(37,211,102,0.08);border:1px solid rgba(37,211,102,0.2);border-radius:var(--radius-sm);text-decoration:none;color:#25D366;font-size:13px;font-weight:600;margin-top:4px;transition:all 0.2s;">
+      💬 Dúvidas? Entre em contato no WhatsApp
+    </a>
   </div>
 
   <!-- ══ SUCESSO ══ -->
@@ -443,6 +452,7 @@ body::before {
   async function gerarPix() {
     const nome = document.getElementById('inp-nome').value.trim();
     const email = document.getElementById('inp-email').value.trim();
+    const whatsapp = document.getElementById('inp-whatsapp').value.trim();
 
     if (!nome || !email) {
       showToast('Preencha nome e e-mail');
@@ -461,7 +471,7 @@ body::before {
       const res = await fetch('/criar-pix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email })
+        body: JSON.stringify({ nome, email, whatsapp })
       });
       const data = await res.json();
 
