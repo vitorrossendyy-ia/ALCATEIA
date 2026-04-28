@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Alcateia</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0c0c0e;
+  --surface: #141416;
+  --surface2: #1c1c1f;
+  --surface3: #242428;
+  --accent: #e8b84b;
+  --accent-dim: rgba(232,184,75,0.12);
+  --border: rgba(255,255,255,0.06);
+  --border-accent: rgba(232,184,75,0.2);
+  --text: #f0f0f2;
+  --text-secondary: #9090a0;
+  --text-muted: #555560;
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.1);
+  --green-border: rgba(34,197,94,0.2);
+  --yellow: #f59e0b;
+  --yellow-dim: rgba(245,158,11,0.1);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.1);
+  --radius: 14px;
+  --radius-sm: 9px;
+}
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* LOGIN */
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+}
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.login-logo-icon {
+  width: 40px; height: 40px;
+  background: var(--accent-dim);
+  border: 1px solid var(--border-accent);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.login-logo-text { font-size: 15px; font-weight: 700; }
+.login-logo-sub { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+.login-title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+.login-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
+.field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.field input {
+  width: 100%; padding: 13px 15px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500;
+  outline: none; transition: border-color 0.2s; margin-bottom: 16px;
+}
+.field input:focus { border-color: var(--border-accent); }
+.btn-primary {
+  width: 100%; padding: 14px;
+  background: var(--accent); color: #0c0c0e;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700;
+  border: none; border-radius: var(--radius-sm); cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-primary:hover { opacity: 0.9; }
+.login-error {
+  display: none;
+  background: var(--red-dim); border: 1px solid rgba(239,68,68,0.2);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: 13px; color: var(--red); margin-top: 12px; text-align: center;
+}
+.login-error.show { display: block; }
+
+/* DASHBOARD */
+.dashboard { display: none; }
+.dashboard.show { display: block; }
+
+/* Topbar */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-icon { font-size: 20px; }
+.topbar-title { font-size: 15px; font-weight: 700; }
+.topbar-subtitle { font-size: 11px; color: var(--text-secondary); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.refresh-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text-secondary); font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px; font-weight: 600; padding: 7px 14px;
+  border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
+}
+.refresh-btn:hover { border-color: var(--border-accent); color: var(--accent); }
+.logout-btn {
+  background: none; border: none; color: var(--text-muted);
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px;
+  cursor: pointer; transition: color 0.2s;
+}
+.logout-btn:hover { color: var(--text); }
+
+/* Main */
+.main { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+
+/* Stats */
+.stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px 22px;
+}
+.stat-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.stat-value { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; margin-bottom: 4px; }
+.stat-sub { font-size: 12px; color: var(--text-secondary); }
+.stat-card.green .stat-value { color: var(--green); }
+.stat-card.gold .stat-value { color: var(--accent); }
+
+/* Table */
+.table-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.table-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.table-title { font-size: 14px; font-weight: 700; }
+.table-count { font-size: 12px; color: var(--text-muted); }
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; padding: 12px 22px;
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+td {
+  padding: 14px 22px;
+  font-size: 13px; color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+.td-name { font-weight: 600; color: var(--text); }
+.td-id { font-family: monospace; font-size: 12px; color: var(--text-muted); }
+
+/* Status badge */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 700;
+}
+.badge.approved { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+.badge.pending { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(245,158,11,0.2); }
+.badge.rejected, .badge.cancelled { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+.badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+/* Empty state */
+.empty {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+.empty-text { font-size: 14px; }
+
+/* Loading */
+.loading-row td { text-align: center; padding: 40px; color: var(--text-muted); }
+.spinner {
+  display: inline-block; width: 18px; height: 18px;
+  border: 2px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+  vertical-align: middle; margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--surface3); border: 1px solid var(--border);
+  color: var(--text); font-size: 13px; font-weight: 600;
+  padding: 11px 22px; border-radius: 100px;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 999; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Auto refresh indicator */
+.auto-badge {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--text-muted);
+}
+.auto-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+@media (max-width: 600px) {
+  .stats { grid-template-columns: 1fr 1fr; }
+  th:nth-child(2), td:nth-child(2) { display: none; }
+  .main { padding: 20px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🐺</div>
+      <div>
+        <div class="login-logo-text">Alcateia</div>
+        <div class="login-logo-sub">Painel Administrativo</div>
+      </div>
+    </div>
+    <div class="login-title">Bem-vindo de volta</div>
+    <div class="login-sub">Entre com a senha de administrador.</div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="inp-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter') login()">
+    </div>
+    <button class="btn-primary" onclick="login()">Entrar no painel</button>
+    <div class="login-error" id="login-error">Senha incorreta. Tente novamente.</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-icon">🐺</span>
+      <div>
+        <div class="topbar-title">Alcateia Admin</div>
+        <div class="topbar-subtitle">Painel de pagamentos</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="auto-badge">
+        <div class="auto-dot"></div>
+        Atualização automática
+      </div>
+      <button class="refresh-btn" onclick="carregarPagamentos()">
+        ↻ Atualizar
+      </button>
+      <button class="logout-btn" onclick="logout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card green">
+        <div class="stat-label">Pagamentos aprovados</div>
+        <div class="stat-value" id="stat-aprovados">—</div>
+        <div class="stat-sub">Confirmados pelo Mercado Pago</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total de pedidos</div>
+        <div class="stat-value" id="stat-total">—</div>
+        <div class="stat-sub">Pix gerados hoje</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-label">Receita aprovada</div>
+        <div class="stat-value" id="stat-receita">—</div>
+        <div class="stat-sub">Em R$ (aprovados × R$99)</div>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">Histórico de pagamentos</div>
+        <div class="table-count" id="table-count">—</div>
+      </div>
+      <div id="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>E-mail</th>
+              <th>ID Mercado Pago</th>
+              <th>Horário</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-body">
+            <tr class="loading-row">
+              <td colspan="5"><span class="spinner"></span> Carregando...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let senhaAtual = '';
+  let autoRefresh = null;
+
+  async function login() {
+    const senha = document.getElementById('inp-senha').value;
+    const err = document.getElementById('login-error');
+    err.classList.remove('show');
+
+    try {
+      const res = await fetch('/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senha })
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        senhaAtual = senha;
+        document.getElementById('login-wrap').style.display = 'none';
+        document.getElementById('dashboard').classList.add('show');
+        carregarPagamentos();
+        // Auto refresh a cada 10 segundos
+        autoRefresh = setInterval(carregarPagamentos, 10000);
+      } else {
+        err.classList.add('show');
+      }
+    } catch (e) {
+      err.textContent = 'Erro de conexão. Verifique o servidor.';
+      err.classList.add('show');
+    }
+  }
+
+  function logout() {
+    clearInterval(autoRefresh);
+    senhaAtual = '';
+    document.getElementById('dashboard').classList.remove('show');
+    document.getElementById('login-wrap').style.display = 'flex';
+    document.getElementById('inp-senha').value = '';
+  }
+
+  async function carregarPagamentos() {
+    try {
+      const res = await fetch('/admin/pagamentos', {
+        headers: { 'x-admin-password': senhaAtual }
+      });
+      if (res.status === 401) { logout(); return; }
+
+      const data = await res.json();
+      renderStats(data);
+      renderTabela(data.pagamentos);
+    } catch (e) {
+      showToast('Erro ao carregar dados');
+    }
+  }
+
+  function renderStats(data) {
+    document.getElementById('stat-aprovados').textContent = data.aprovados;
+    document.getElementById('stat-total').textContent = data.total;
+    document.getElementById('stat-receita').textContent = `R$${data.aprovados * 99}`;
+    document.getElementById('table-count').textContent = `${data.total} registro${data.total !== 1 ? 's' : ''}`;
+  }
+
+  function renderTabela(pagamentos) {
+    const tbody = document.getElementById('tabela-body');
+
+    if (!pagamentos || pagamentos.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5">
+            <div class="empty">
+              <div class="empty-icon">📭</div>
+              <div class="empty-text">Nenhum pagamento ainda.<br>Quando alguém gerar um Pix, aparece aqui.</div>
+            </div>
+          </td>
+        </tr>`;
+      return;
+    }
+
+    tbody.innerHTML = pagamentos.map(p => {
+      const date = new Date(p.criado_em);
+      const hora = date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      const badge = getBadge(p.status);
+      return `
+        <tr>
+          <td class="td-name">${esc(p.nome)}</td>
+          <td>${esc(p.email)}</td>
+          <td class="td-id">${p.id}</td>
+          <td>${hora}</td>
+          <td>${badge}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function getBadge(status) {
+    const labels = {
+      approved: '✓ Aprovado',
+      pending: '⏳ Pendente',
+      rejected: '✗ Rejeitado',
+      cancelled: '✗ Cancelado',
+    };
+    const label = labels[status] || status;
+    const cls = status === 'approved' ? 'approved' : status === 'pending' ? 'pending' : 'rejected';
+    return `<span class="badge ${cls}"><span class="badge-dot"></span>${label}</span>`;
+  }
+
+  function esc(str) {
+    return String(str || '—').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // Enter no campo de senha
+  document.getElementById('inp-senha').addEventListener('keydown', e => {
+    if (e.key === 'Enter') login();
+  });
+</script>
+</body>
+</html>
