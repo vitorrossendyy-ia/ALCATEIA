@@ -128,6 +128,14 @@ body {
   cursor: pointer; transition: color 0.2s;
 }
 .logout-btn:hover { color: var(--text); }
+.simular-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
+  color: #22c55e; font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px; font-weight: 600; padding: 7px 14px;
+  border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
+}
+.simular-btn:hover { background: rgba(34,197,94,0.2); }
 
 /* Main */
 .main { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
@@ -272,6 +280,9 @@ tr:hover td { background: var(--surface2); }
         <div class="auto-dot"></div>
         Atualização automática
       </div>
+      <button class="simular-btn" onclick="simularPagamento()">
+        🧪 Simular pagamento
+      </button>
       <button class="refresh-btn" onclick="carregarPagamentos()">
         ↻ Atualizar
       </button>
@@ -437,6 +448,23 @@ tr:hover td { background: var(--surface2); }
 
   function esc(str) {
     return String(str || '—').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  async function simularPagamento() {
+    try {
+      const res = await fetch('/admin/simular', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': senhaAtual },
+        body: JSON.stringify({ nome: 'Cliente Teste', email: 'teste@alcateia.com' })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showToast('✅ Pagamento simulado com sucesso!');
+        carregarPagamentos();
+      }
+    } catch (e) {
+      showToast('Erro ao simular pagamento');
+    }
   }
 
   function showToast(msg) {
