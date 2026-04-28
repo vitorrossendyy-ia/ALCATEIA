@@ -10,7 +10,7 @@ app.use(cors());
 
 // ─── Mercado Pago ───
 const client = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN || "TEST-1411058631952367-042813-2293bc803e953dc2aff159288614561d-256824285",
+  accessToken: process.env.MP_ACCESS_TOKEN,
 });
 const payment = new Payment(client);
 
