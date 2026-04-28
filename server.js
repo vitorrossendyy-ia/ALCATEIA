@@ -19,10 +19,17 @@ const ADMIN_PASS = process.env.ADMIN_PASSWORD || "082751@Oreo";
 const AUTH_PASS  = process.env.AUTH_PASSWORD  || "Oreo@autorizar2024";
 
 // ─── Banco de dados ───
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
-});
+let pool;
+if (process.env.DATABASE_URL) {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  });
+  console.log("🔗 Conectando ao PostgreSQL via DATABASE_URL...");
+} else {
+  console.error("❌ DATABASE_URL não definida!");
+  process.exit(1);
+}
 
 // Cria tabela se não existir
 async function initDB() {
@@ -40,7 +47,7 @@ async function initDB() {
   `);
   console.log("✅ Banco de dados pronto");
 }
-initDB().catch(console.error);
+initDB().catch(e => console.error("Erro initDB:", e.message));
 
 // ─── Middleware admin ───
 function adminAuth(req, res, next) {
