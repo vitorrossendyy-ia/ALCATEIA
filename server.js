@@ -2,30 +2,58 @@ const express = require("express");
 const cors = require("cors");
 const { MercadoPagoConfig, Payment } = require("mercadopago");
 const path = require("path");
+const { Pool } = require("pg");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
+// ─── Mercado Pago ───
 const client = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN || "TEST-1411058631952367-042813-2293bc803e953dc2aff159288614561d-256824285",
 });
 const payment = new Payment(client);
 
+// ─── Senhas ───
 const ADMIN_PASS = process.env.ADMIN_PASSWORD || "082751@Oreo";
-const AUTH_PASS = process.env.AUTH_PASSWORD || "Oreo@autorizar2024";
-const pagamentos = [];
+const AUTH_PASS  = process.env.AUTH_PASSWORD  || "Oreo@autorizar2024";
 
+// ─── Banco de dados ───
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+});
+
+// Cria tabela se não existir
+async function initDB() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS cadastros (
+      id TEXT PRIMARY KEY,
+      nome TEXT,
+      email TEXT,
+      whatsapp TEXT,
+      status TEXT DEFAULT 'pending',
+      valor INTEGER DEFAULT 99,
+      tipo TEXT DEFAULT 'pix',
+      criado_em TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
+  console.log("✅ Banco de dados pronto");
+}
+initDB().catch(console.error);
+
+// ─── Middleware admin ───
 function adminAuth(req, res, next) {
   const senha = req.headers["x-admin-password"];
   if (senha !== ADMIN_PASS) return res.status(401).json({ error: "Não autorizado" });
   next();
 }
 
-// Criar Pix
+// ─── Criar Pix ───
 app.post("/criar-pix", async (req, res) => {
   try {
-    const { nome, email } = req.body;
+    const { nome, email, whatsapp } = req.body;
+
     const result = await payment.create({
       body: {
         transaction_amount: 99,
@@ -37,15 +65,17 @@ app.post("/criar-pix", async (req, res) => {
         },
       },
     });
+
     const pixData = result.point_of_interaction?.transaction_data;
-    pagamentos.unshift({
-      id: result.id,
-      nome: nome || "—",
-      email: email || "—",
-      status: result.status,
-      valor: 99,
-      criado_em: new Date().toISOString(),
-    });
+
+    // Salva no banco
+    await pool.query(
+      `INSERT INTO cadastros (id, nome, email, whatsapp, status, valor, tipo)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (id) DO NOTHING`,
+      [String(result.id), nome || "—", email || "—", whatsapp || "—", result.status, 99, "pix"]
+    );
+
     res.json({
       id: result.id,
       status: result.status,
@@ -58,98 +88,83 @@ app.post("/criar-pix", async (req, res) => {
   }
 });
 
-// Verificar pagamento (cliente fica polling aqui)
+// ─── Verificar pagamento ───
 app.get("/verificar/:id", async (req, res) => {
   try {
-    const p = pagamentos.find(p => String(p.id) === String(req.params.id));
-    // Se foi autorizado manualmente pelo admin, retorna approved direto
-    if (p && p.status === "approved") {
-      return res.json({ status: "approved" });
-    }
-    // Senão consulta o MP
+    const local = await pool.query("SELECT status FROM cadastros WHERE id=$1", [req.params.id]);
+    if (local.rows[0]?.status === "approved") return res.json({ status: "approved" });
+
     const result = await payment.get({ id: req.params.id });
-    if (p) p.status = result.status;
+    await pool.query("UPDATE cadastros SET status=$1 WHERE id=$2", [result.status, String(req.params.id)]);
     res.json({ status: result.status });
   } catch (err) {
-    // Se der erro na API do MP (ex: ID simulado), usa o status local
-    const p = pagamentos.find(p => String(p.id) === String(req.params.id));
-    if (p) return res.json({ status: p.status });
-    res.status(500).json({ error: "Erro ao verificar pagamento." });
+    const local = await pool.query("SELECT status FROM cadastros WHERE id=$1", [req.params.id]).catch(() => ({ rows: [] }));
+    if (local.rows[0]) return res.json({ status: local.rows[0].status });
+    res.status(500).json({ error: "Erro ao verificar." });
   }
 });
 
-// Admin: listar pagamentos
+// ─── Admin: listar todos os cadastros ───
 app.get("/admin/pagamentos", adminAuth, async (req, res) => {
-  for (const p of pagamentos) {
-    if (p.status === "pending" && !String(p.id).startsWith("SIMULADO")) {
+  try {
+    // Atualiza pendentes reais do MP
+    const pendentes = await pool.query("SELECT id FROM cadastros WHERE status='pending' AND tipo='pix'");
+    for (const row of pendentes.rows) {
       try {
-        const result = await payment.get({ id: p.id });
-        p.status = result.status;
+        const result = await payment.get({ id: row.id });
+        if (result.status !== "pending") {
+          await pool.query("UPDATE cadastros SET status=$1 WHERE id=$2", [result.status, row.id]);
+        }
       } catch (e) {}
     }
+
+    const todos = await pool.query("SELECT * FROM cadastros ORDER BY criado_em DESC");
+    const aprovados = todos.rows.filter(p => p.status === "approved").length;
+    const receita = todos.rows.filter(p => p.status === "approved").reduce((acc, p) => acc + (p.valor || 0), 0);
+
+    res.json({ pagamentos: todos.rows, total: todos.rows.length, aprovados, receita });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao buscar dados." });
   }
-  res.json({
-    pagamentos,
-    total: pagamentos.length,
-    aprovados: pagamentos.filter(p => p.status === "approved").length
-  });
 });
 
-// Autorizar acesso sem pagamento (senha especial)
-app.post("/autorizar-acesso", (req, res) => {
-  const { senha, nome, email } = req.body;
-  if (senha !== AUTH_PASS) return res.status(401).json({ error: "Senha incorreta" });
-  const entry = {
-    id: "GRATUITO-" + Date.now(),
-    nome: nome || "Acesso Gratuito",
-    email: email || "—",
-    status: "approved",
-    valor: 0,
-    criado_em: new Date().toISOString(),
-  };
-  pagamentos.unshift(entry);
-  res.json({ ok: true, pagamento: entry });
-});
-
-// Admin: autorizar pagamento manualmente
-app.post("/admin/autorizar/:id", adminAuth, (req, res) => {
-  const p = pagamentos.find(p => String(p.id) === String(req.params.id));
-  if (!p) return res.status(404).json({ error: "Pagamento não encontrado" });
-  p.status = "approved";
+// ─── Admin: autorizar pagamento manualmente ───
+app.post("/admin/autorizar/:id", adminAuth, async (req, res) => {
+  await pool.query("UPDATE cadastros SET status='approved' WHERE id=$1", [req.params.id]);
   res.json({ ok: true });
 });
 
-// Admin: simular novo pagamento
-app.post("/admin/simular", adminAuth, (req, res) => {
-  const fake = {
-    id: "SIMULADO-" + Date.now(),
-    nome: req.body.nome || "Cliente Teste",
-    email: req.body.email || "teste@alcateia.com",
-    status: "pending",
-    valor: 99,
-    criado_em: new Date().toISOString(),
-  };
-  pagamentos.unshift(fake);
-  res.json({ ok: true, pagamento: fake });
+// ─── Admin: apagar cadastro (com senha especial) ───
+app.delete("/admin/apagar/:id", adminAuth, async (req, res) => {
+  const { senha } = req.body;
+  if (senha !== AUTH_PASS) return res.status(401).json({ error: "Senha incorreta" });
+  await pool.query("DELETE FROM cadastros WHERE id=$1", [req.params.id]);
+  res.json({ ok: true });
 });
 
-// Admin: login
+// ─── Liberar acesso sem pagamento ───
+app.post("/autorizar-acesso", async (req, res) => {
+  const { senha, nome, email, whatsapp } = req.body;
+  if (senha !== AUTH_PASS) return res.status(401).json({ error: "Senha incorreta" });
+  const id = "GRATUITO-" + Date.now();
+  await pool.query(
+    `INSERT INTO cadastros (id, nome, email, whatsapp, status, valor, tipo) VALUES ($1,$2,$3,$4,'approved',0,'gratuito')`,
+    [id, nome || "Acesso Gratuito", email || "—", whatsapp || "—"]
+  );
+  res.json({ ok: true });
+});
+
+// ─── Admin: login ───
 app.post("/admin/login", (req, res) => {
   const { senha } = req.body;
   if (senha === ADMIN_PASS) res.json({ ok: true });
   else res.status(401).json({ ok: false });
 });
 
-app.get("/admin", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "admin.html"));
-});
-
+app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "public", "admin.html")));
 app.use(express.static("public"));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Alcateia rodando na porta ${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅ Alcateia rodando na porta ${PORT}`));
