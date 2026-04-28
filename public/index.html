@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alcateia — Grupo Exclusivo de Fornecedores</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0c0c0e;
+  --surface: #141416;
+  --surface2: #1c1c1f;
+  --surface3: #242428;
+  --accent: #e8b84b;
+  --accent-dim: rgba(232,184,75,0.12);
+  --accent-glow: rgba(232,184,75,0.15);
+  --text: #f0f0f2;
+  --text-secondary: #9090a0;
+  --text-muted: #555560;
+  --border: rgba(255,255,255,0.06);
+  --border-accent: rgba(232,184,75,0.2);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: -40%; left: 50%;
+  transform: translateX(-50%);
+  width: 800px; height: 600px;
+  background: radial-gradient(ellipse, rgba(232,184,75,0.05) 0%, transparent 65%);
+  pointer-events: none; z-index: 0;
+}
+
+.page {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 48px 20px 80px;
+  position: relative; z-index: 1;
+}
+
+/* HEADER */
+.header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 52px;
+  animation: up 0.6s ease both;
+}
+.logo-mark {
+  width: 40px; height: 40px;
+  background: var(--accent-dim);
+  border: 1px solid var(--border-accent);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.logo-text { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+.logo-sub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.header-badge {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 100px; padding: 5px 12px;
+  font-size: 11px; font-weight: 600; color: #22c55e;
+}
+.dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* HERO */
+.tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-dim); border: 1px solid var(--border-accent);
+  border-radius: 100px; padding: 5px 12px 5px 8px;
+  font-size: 11px; font-weight: 600; color: var(--accent);
+  margin-bottom: 24px; animation: up 0.6s 0.05s ease both;
+}
+.hero-title {
+  font-size: clamp(36px, 9vw, 52px); font-weight: 800;
+  line-height: 1.08; letter-spacing: -0.03em; margin-bottom: 18px;
+  animation: up 0.6s 0.1s ease both;
+}
+.hero-desc {
+  font-size: 15px; line-height: 1.75; color: var(--text-secondary);
+  margin-bottom: 40px; animation: up 0.6s 0.15s ease both;
+}
+
+/* BENEFITS */
+.benefits {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 40px;
+  animation: up 0.6s 0.2s ease both;
+}
+.benefit {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px;
+  transition: border-color 0.25s, background 0.25s;
+}
+.benefit:hover { border-color: var(--border-accent); background: var(--surface2); }
+.benefit-icon { font-size: 22px; margin-bottom: 10px; display: block; }
+.benefit-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.benefit-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+/* PRICE CARD */
+.price-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px; margin-bottom: 12px;
+  animation: up 0.6s 0.25s ease both; position: relative; overflow: hidden;
+}
+.price-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.5;
+}
+.price-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 20px; }
+.price-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.price-value { font-size: 52px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+.price-value sup { font-size: 22px; font-weight: 600; vertical-align: super; color: var(--text-secondary); }
+.price-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.price-badge { background: var(--accent-dim); border: 1px solid var(--border-accent); border-radius: 8px; padding: 8px 14px; text-align: right; }
+.price-badge-text { font-size: 11px; font-weight: 700; color: var(--accent); display: block; }
+.price-badge-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; display: block; }
+
+.cta-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 17px; background: var(--accent); color: #0c0c0e;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700;
+  border: none; border-radius: var(--radius-sm); cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.cta-btn:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 32px rgba(232,184,75,0.25); }
+.cta-btn:active { transform: translateY(0); }
+.cta-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.trust-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; margin-top: 14px; animation: up 0.6s 0.3s ease both;
+}
+.trust-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.trust-dot { width: 3px; height: 3px; background: var(--text-muted); border-radius: 50%; }
+
+/* SECTIONS */
+.section { display: none; }
+.section.active { display: block; }
+
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: none; color: var(--text-secondary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  padding: 0; margin-bottom: 32px; transition: color 0.2s;
+}
+.back-btn:hover { color: var(--text); }
+
+.section-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+.section-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 28px; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px; margin-bottom: 12px;
+}
+.card-label {
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;
+}
+
+/* FORM */
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.field input {
+  width: 100%; padding: 13px 15px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500;
+  outline: none; transition: border-color 0.2s;
+}
+.field input::placeholder { color: var(--text-muted); font-weight: 400; }
+.field input:focus { border-color: var(--border-accent); }
+
+/* PIX QR */
+.qr-wrapper {
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+}
+.qr-wrapper img { width: 180px; height: 180px; display: block; }
+
+.pix-copy-box {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px;
+}
+.pix-copy-text {
+  font-size: 12px; color: var(--text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 70%; font-family: monospace;
+}
+.copy-btn {
+  background: var(--accent-dim); border: 1px solid var(--border-accent);
+  color: var(--accent); font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px; font-weight: 700; padding: 7px 14px;
+  border-radius: 7px; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+}
+.copy-btn:hover { background: rgba(232,184,75,0.2); }
+.copy-btn.copied { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: #22c55e; }
+
+/* Status checker */
+.status-box {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 13px; color: var(--text-secondary);
+}
+.status-box .spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.status-box.paid { border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.05); color: #22c55e; }
+.status-box.paid .spinner { display: none; }
+
+/* Loading overlay */
+.loading-overlay {
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+  padding: 40px 20px; text-align: center;
+}
+.loading-overlay.active { display: flex; }
+.big-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.loading-text { font-size: 14px; color: var(--text-secondary); }
+
+/* SUCCESS */
+.success-section { text-align: center; }
+.success-icon { font-size: 56px; display: block; margin-bottom: 20px; animation: pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes pop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+.success-title { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; }
+.success-desc { font-size: 15px; color: var(--text-secondary); line-height: 1.75; margin-bottom: 36px; }
+.wa-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 32px; background: #25D366; color: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700;
+  border-radius: var(--radius-sm); text-decoration: none;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.wa-btn:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 28px rgba(37,211,102,0.25); }
+.success-note {
+  margin-top: 20px; padding: 14px 18px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 12px; color: var(--text-muted);
+  line-height: 1.6; text-align: left;
+}
+
+@keyframes up { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--surface3); border: 1px solid var(--border);
+  color: var(--text); font-size: 13px; font-weight: 600;
+  padding: 11px 22px; border-radius: 100px;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 999; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══ LANDING ══ -->
+  <div id="s-landing" class="section active">
+    <div class="header">
+      <div class="logo-mark">🐺</div>
+      <div>
+        <div class="logo-text">Alcateia</div>
+        <div class="logo-sub">Grupo de Fornecedores</div>
+      </div>
+      <div class="header-badge"><div class="dot"></div>Vagas abertas</div>
+    </div>
+
+    <div class="tag">🐺 &nbsp;Acesso exclusivo</div>
+    <h1 class="hero-title">Os melhores<br>fornecedores,<br>num só lugar.</h1>
+    <p class="hero-desc">Acesso direto a fornecedores verificados com os melhores preços de atacado. Uma comunidade seleta que realmente entrega resultado.</p>
+
+    <div class="benefits">
+      <div class="benefit"><span class="benefit-icon">📦</span><div class="benefit-title">Fornecedores verificados</div><div class="benefit-desc">Contatos reais, preços de atacado</div></div>
+      <div class="benefit"><span class="benefit-icon">🔄</span><div class="benefit-title">Sempre atualizado</div><div class="benefit-desc">Novidades toda semana no grupo</div></div>
+      <div class="benefit"><span class="benefit-icon">♾️</span><div class="benefit-title">Acesso vitalício</div><div class="benefit-desc">Pague uma vez, fique pra sempre</div></div>
+      <div class="benefit"><span class="benefit-icon">⚡</span><div class="benefit-title">Entrada rápida</div><div class="benefit-desc">Adicionado em minutos após o Pix</div></div>
+    </div>
+
+    <div class="price-card">
+      <div class="price-row">
+        <div>
+          <div class="price-label">Investimento único</div>
+          <div class="price-value"><sup>R$</sup>99</div>
+          <div class="price-desc">Pagamento via Pix</div>
+        </div>
+        <div class="price-badge">
+          <span class="price-badge-text">Acesso vitalício</span>
+          <span class="price-badge-sub">Sem mensalidade</span>
+        </div>
+      </div>
+      <button class="cta-btn" onclick="goToForm()">🐺 &nbsp;Quero entrar na alcateia</button>
+    </div>
+
+    <div class="trust-row">
+      <div class="trust-item">🔒 Pagamento seguro</div>
+      <div class="trust-dot"></div>
+      <div class="trust-item">⚡ Acesso rápido</div>
+      <div class="trust-dot"></div>
+      <div class="trust-item">✅ Grupo ativo</div>
+    </div>
+  </div>
+
+  <!-- ══ FORMULÁRIO ══ -->
+  <div id="s-form" class="section">
+    <button class="back-btn" onclick="goTo('s-landing')">← Voltar</button>
+    <div class="section-title">Seus dados</div>
+    <div class="section-sub">Preencha para gerarmos seu Pix exclusivo.</div>
+
+    <div class="card">
+      <div class="field">
+        <label>Seu nome</label>
+        <input type="text" id="inp-nome" placeholder="Nome completo">
+      </div>
+      <div class="field">
+        <label>Seu e-mail</label>
+        <input type="email" id="inp-email" placeholder="email@exemplo.com">
+      </div>
+      <button class="cta-btn" id="btn-gerar" onclick="gerarPix()" style="margin-top:8px">
+        Gerar Pix →
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ PIX ══ -->
+  <div id="s-pix" class="section">
+    <button class="back-btn" onclick="goTo('s-form')">← Voltar</button>
+    <div class="section-title">Realize o Pix</div>
+    <div class="section-sub">Escaneie o QR Code ou copie o código abaixo.</div>
+
+    <!-- Loading -->
+    <div class="loading-overlay active" id="pix-loading">
+      <div class="big-spinner"></div>
+      <div class="loading-text">Gerando seu Pix...</div>
+    </div>
+
+    <!-- Conteúdo Pix -->
+    <div id="pix-content" style="display:none">
+      <div class="card" style="text-align:center">
+        <div class="card-label" style="text-align:left">QR Code Pix</div>
+        <div class="qr-wrapper">
+          <img id="qr-img" src="" alt="QR Code Pix">
+        </div>
+        <div class="pix-copy-box">
+          <span class="pix-copy-text" id="pix-code-text"></span>
+          <button class="copy-btn" id="copy-pix-btn" onclick="copyPixCode()">Copiar</button>
+        </div>
+        <div style="font-size:13px; color:var(--text-secondary); margin-bottom:8px">Valor</div>
+        <div style="font-size:32px; font-weight:800; letter-spacing:-0.02em; margin-bottom:16px">R$ 99,00</div>
+
+        <div class="status-box" id="status-box">
+          <div class="spinner"></div>
+          <span id="status-text">Aguardando pagamento...</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Como pagar</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:24px;height:24px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0">1</div>
+            <div style="font-size:13px;color:var(--text-secondary);padding-top:3px">Abra seu banco e vá em <strong style="color:var(--text)">Pix → Pagar</strong></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:24px;height:24px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0">2</div>
+            <div style="font-size:13px;color:var(--text-secondary);padding-top:3px">Escaneie o QR Code ou cole o código Pix</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:24px;height:24px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0">3</div>
+            <div style="font-size:13px;color:var(--text-secondary);padding-top:3px">Confirme o valor de <strong style="color:var(--text)">R$ 99,00</strong> e pague</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SUCESSO ══ -->
+  <div id="s-success" class="section">
+    <div class="success-section">
+      <span class="success-icon">🎉</span>
+      <div class="success-title">Pagamento confirmado!</div>
+      <p class="success-desc">Seu pagamento foi aprovado! Agora é só mandar o 🐺 pra gente no WhatsApp — te adicionamos no grupo em minutos.</p>
+      <a href="https://wa.me/5569993725858?text=%F0%9F%90%BA" class="wa-btn" target="_blank">💬 &nbsp;Mandar 🐺 no WhatsApp</a>
+      <div class="success-note">
+        💡 Ao receber seu 🐺, você será adicionado manualmente no grupo. O acesso costuma ser liberado em poucos minutos durante o horário comercial.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let paymentId = null;
+  let checkInterval = null;
+
+  function goTo(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToForm() {
+    goTo('s-form');
+  }
+
+  async function gerarPix() {
+    const nome = document.getElementById('inp-nome').value.trim();
+    const email = document.getElementById('inp-email').value.trim();
+
+    if (!nome || !email) {
+      showToast('Preencha nome e e-mail');
+      return;
+    }
+    if (!email.includes('@')) {
+      showToast('E-mail inválido');
+      return;
+    }
+
+    const btn = document.getElementById('btn-gerar');
+    btn.disabled = true;
+    btn.textContent = 'Gerando Pix...';
+
+    try {
+      const res = await fetch('/criar-pix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email })
+      });
+      const data = await res.json();
+
+      if (data.error) throw new Error(data.error);
+
+      paymentId = data.id;
+      goTo('s-pix');
+
+      // Mostrar QR
+      document.getElementById('pix-loading').classList.remove('active');
+      document.getElementById('pix-content').style.display = 'block';
+      document.getElementById('qr-img').src = `data:image/png;base64,${data.qr_code_base64}`;
+      document.getElementById('pix-code-text').textContent = data.qr_code;
+
+      // Iniciar verificação automática
+      startChecking();
+
+    } catch (err) {
+      showToast('Erro ao gerar Pix. Tente novamente.');
+      btn.disabled = false;
+      btn.textContent = 'Gerar Pix →';
+    }
+  }
+
+  function startChecking() {
+    checkInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`/verificar/${paymentId}`);
+        const data = await res.json();
+
+        if (data.status === 'approved') {
+          clearInterval(checkInterval);
+          const box = document.getElementById('status-box');
+          box.classList.add('paid');
+          document.getElementById('status-text').textContent = '✅ Pagamento confirmado!';
+          setTimeout(() => goTo('s-success'), 1500);
+        }
+      } catch (e) {}
+    }, 4000); // verifica a cada 4 segundos
+  }
+
+  function copyPixCode() {
+    const code = document.getElementById('pix-code-text').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      const btn = document.getElementById('copy-pix-btn');
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      showToast('Código Pix copiado!');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2500);
+    });
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>
