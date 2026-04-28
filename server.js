@@ -19,8 +19,8 @@ const ADMIN_PASS = process.env.ADMIN_PASSWORD || "082751@Oreo";
 const AUTH_PASS  = process.env.AUTH_PASSWORD  || "Oreo@autorizar2024";
 
 // ─── Banco de dados ───
-const DB_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.PG_URL;
-console.log("DATABASE_URL presente:", !!DB_URL);
+const DB_URL = process.env.ALCATEIA_DB || process.env.DATABASE_URL || process.env.POSTGRES_URL;
+console.log("DB_URL presente:", !!DB_URL, "| ALCATEIA_DB:", !!process.env.ALCATEIA_DB);
 
 const pool = DB_URL ? new Pool({
   connectionString: DB_URL,
