@@ -98,7 +98,7 @@ app.post("/criar-pix", async (req, res) => {
     const { nome, email, whatsapp } = req.body;
     const result = await payment.create({
       body: {
-        transaction_amount: 1,
+        transaction_amount: 99,
         description: "Alcateia — Grupo Exclusivo de Fornecedores",
         payment_method_id: "pix",
         payer: { email: email || "comprador@email.com", first_name: nome || "Comprador" },
