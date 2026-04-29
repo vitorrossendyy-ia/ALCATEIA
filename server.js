@@ -9,8 +9,9 @@ app.use(express.json());
 app.use(cors());
 
 // ─── Mercado Pago ───
+const rawToken = (process.env.MP_ACCESS_TOKEN || "").trim().replace(/[\r\n\t]/g, "");
 const client = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN,
+  accessToken: rawToken,
 });
 const payment = new Payment(client);
 
